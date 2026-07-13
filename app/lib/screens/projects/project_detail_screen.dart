@@ -36,17 +36,23 @@ class ProjectDetailScreen extends StatelessWidget {
                   EcDataRow(
                     icon: Icons.person,
                     label: "Cliente",
-                    value: project.clientDisplay,
+                    value: project.client.isEmpty
+                        ? "No especificado"
+                        : project.client,
                   ),
                   EcDataRow(
                     icon: Icons.location_on,
                     label: "Dirección",
-                    value: project.fullAddress,
+                    value:
+                    "${project.address}, ${project.city}",
                   ),
                   EcDataRow(
-                    icon: Icons.business,
-                    label: "Distribuidora",
-                    value: project.distributorDisplay,
+                    icon: Icons.calendar_today,
+                    label: "Creado",
+                    value:
+                    "${project.createdAt.day.toString().padLeft(2, '0')}/"
+                        "${project.createdAt.month.toString().padLeft(2, '0')}/"
+                        "${project.createdAt.year}",
                   ),
                 ],
               ),
@@ -67,11 +73,9 @@ class ProjectDetailScreen extends StatelessWidget {
             EcSectionCard(
               titulo: "Observaciones",
               icon: Icons.description,
-              child: Text(
-                project.notes.isEmpty
-                    ? "Sin observaciones."
-                    : project.notes,
-                style: const TextStyle(
+              child: const Text(
+                "Sin observaciones.",
+                style: TextStyle(
                   fontSize: 15,
                   height: 1.5,
                 ),

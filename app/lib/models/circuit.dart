@@ -2,13 +2,13 @@ enum CircuitType {
   lighting,
   outlets,
   kitchen,
-  airConditioner,
-  waterPump,
-  electricGate,
-  electricOven,
+  oven,
   waterHeater,
+  airConditioner,
+  pump,
   motor,
-  other,
+  gate,
+  special,
 }
 
 class Circuit {
@@ -28,21 +28,15 @@ class Circuit {
 
   final double length;
 
-  final double conductorSection;
+  final String conductor;
 
-  final String conductorMaterial;
+  final String breaker;
 
-  final int breaker;
-
-  final int differential;
-
-  final String conduit;
+  final String differential;
 
   final double voltageDrop;
 
-  final bool complies;
-
-  final List<String> observations;
+  final String observations;
 
   const Circuit({
     required this.id,
@@ -53,14 +47,11 @@ class Circuit {
     required this.power,
     required this.current,
     required this.length,
-    required this.conductorSection,
-    required this.conductorMaterial,
+    required this.conductor,
     required this.breaker,
     required this.differential,
-    required this.conduit,
     required this.voltageDrop,
-    required this.complies,
-    required this.observations,
+    this.observations = '',
   });
 
   Circuit copyWith({
@@ -72,14 +63,11 @@ class Circuit {
     double? power,
     double? current,
     double? length,
-    double? conductorSection,
-    String? conductorMaterial,
-    int? breaker,
-    int? differential,
-    String? conduit,
+    String? conductor,
+    String? breaker,
+    String? differential,
     double? voltageDrop,
-    bool? complies,
-    List<String>? observations,
+    String? observations,
   }) {
     return Circuit(
       id: id ?? this.id,
@@ -90,14 +78,81 @@ class Circuit {
       power: power ?? this.power,
       current: current ?? this.current,
       length: length ?? this.length,
-      conductorSection: conductorSection ?? this.conductorSection,
-      conductorMaterial: conductorMaterial ?? this.conductorMaterial,
+      conductor: conductor ?? this.conductor,
       breaker: breaker ?? this.breaker,
       differential: differential ?? this.differential,
-      conduit: conduit ?? this.conduit,
       voltageDrop: voltageDrop ?? this.voltageDrop,
-      complies: complies ?? this.complies,
       observations: observations ?? this.observations,
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'projectId': projectId,
+      'name': name,
+      'type': type.index,
+      'voltage': voltage,
+      'power': power,
+      'current': current,
+      'length': length,
+      'conductor': conductor,
+      'breaker': breaker,
+      'differential': differential,
+      'voltageDrop': voltageDrop,
+      'observations': observations,
+    };
+  }
+
+  factory Circuit.fromMap(Map<String, dynamic> map) {
+    return Circuit(
+      id: map['id'],
+      projectId: map['projectId'],
+      name: map['name'],
+      type: CircuitType.values[map['type']],
+      voltage: (map['voltage'] as num).toDouble(),
+      power: (map['power'] as num).toDouble(),
+      current: (map['current'] as num).toDouble(),
+      length: (map['length'] as num).toDouble(),
+      conductor: map['conductor'],
+      breaker: map['breaker'],
+      differential: map['differential'],
+      voltageDrop: (map['voltageDrop'] as num).toDouble(),
+      observations: map['observations'] ?? '',
+    );
+  }
+
+  String get typeName {
+    switch (type) {
+      case CircuitType.lighting:
+        return 'Alumbrado';
+
+      case CircuitType.outlets:
+        return 'Enchufes';
+
+      case CircuitType.kitchen:
+        return 'Cocina';
+
+      case CircuitType.oven:
+        return 'Horno';
+
+      case CircuitType.waterHeater:
+        return 'Termo';
+
+      case CircuitType.airConditioner:
+        return 'Climatización';
+
+      case CircuitType.pump:
+        return 'Bomba';
+
+      case CircuitType.motor:
+        return 'Motor';
+
+      case CircuitType.gate:
+        return 'Portón';
+
+      case CircuitType.special:
+        return 'Especial';
+    }
   }
 }
