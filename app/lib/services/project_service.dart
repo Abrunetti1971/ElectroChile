@@ -7,6 +7,7 @@ class ProjectService {
   ProjectService(this._repository);
 
   List<Project> getProjects() {
+    _repository.sortByDate();
     return _repository.getAll();
   }
 
@@ -14,13 +15,30 @@ class ProjectService {
     required String name,
     required String client,
     required String address,
+    String city = '',
+    String region = '',
   }) {
+    final projectName = name.trim();
+
+    if (projectName.isEmpty) {
+      throw Exception('El nombre del proyecto es obligatorio.');
+    }
+
+    if (_repository.existsByName(projectName)) {
+      throw Exception('Ya existe un proyecto con ese nombre.');
+    }
+
+    final now = DateTime.now();
+
     final project = Project(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: name.trim(),
+      id: now.microsecondsSinceEpoch.toString(),
+      name: projectName,
       client: client.trim(),
       address: address.trim(),
-      createdAt: DateTime.now(),
+      city: city.trim(),
+      region: region.trim(),
+      createdAt: now,
+      updatedAt: now,
     );
 
     _repository.add(project);
@@ -28,19 +46,23 @@ class ProjectService {
     return project;
   }
 
-  void deleteProject(String id) {
-    _repository.remove(id);
+  bool deleteProject(String id) {
+    return _repository.delete(id);
+  }
+
+  bool updateProject(Project project) {
+    return _repository.update(
+      project.copyWith(
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 
   Project? getProject(String id) {
     return _repository.getById(id);
   }
 
-  void updateProject(Project project) {
-    _repository.update(project);
-  }
-
   int get totalProjects => _repository.count;
 
-  bool get hasProjects => !_repository.isEmpty;
+  bool get hasProjects => _repository.isNotEmpty;
 }

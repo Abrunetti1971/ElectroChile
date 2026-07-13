@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../models/project.dart';
 import '../../repositories/project_repository.dart';
 import '../../services/project_service.dart';
 import '../../widgets/project_form_dialog.dart';
@@ -85,25 +84,22 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         padding: const EdgeInsets.all(12),
         itemCount: projects.length,
         itemBuilder: (context, index) {
-          final Project project = projects[index];
+          final project = projects[index];
 
           return Card(
+            elevation: 2,
             child: ListTile(
               leading: const CircleAvatar(
                 child: Icon(Icons.electrical_services),
               ),
               title: Text(project.name),
-              subtitle: Text(
-                project.client.isEmpty
-                    ? "Sin cliente"
-                    : project.client,
-              ),
+              subtitle: Text(project.clientDisplay),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      "Abrir proyecto: ${project.name}",
+                      "Proyecto seleccionado: ${project.name}",
                     ),
                   ),
                 );
