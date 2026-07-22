@@ -59,20 +59,32 @@ class CircuitDao {
   // INSERTAR
   //=========================================================
 
-  Future<void> insert(
-      Circuit circuit,
-      ) async {
+  Future<void> insert(Circuit circuit) async {
     final db = await AppDatabase.instance.database;
 
-    await db.insert(
+    debugPrint('==============================');
+    debugPrint('INSERTANDO CIRCUITO');
+    debugPrint('ID.........: ${circuit.id}');
+    debugPrint('PROJECT....: ${circuit.projectId}');
+    debugPrint('NOMBRE.....: ${circuit.name}');
+    debugPrint('NUMERO.....: ${circuit.number}');
+    debugPrint('==============================');
+
+    final id = await db.insert(
       'circuits',
       circuit.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
-    debugPrint(
-      'Circuito agregado: ${circuit.name}',
-    );
+    debugPrint('ROW INSERTADA: $id');
+
+    final rows = await db.query('circuits');
+
+    debugPrint('TOTAL CIRCUITOS BD: ${rows.length}');
+
+    for (final r in rows) {
+      debugPrint(r.toString());
+    }
   }
 
   //=========================================================

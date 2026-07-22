@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
 
 import '../../models/circuit.dart';
+import '../../models/project.dart';
 import '../../services/electrical_calculator_service.dart';
+import '../../services/ric/ric_inspector.dart';
+import '../../services/reporting/calculation_report.dart';
+import '../../services/pdf/pdf_report_service.dart';
 
 class CircuitDetailScreen extends StatelessWidget {
 final Circuit circuit;
+final Project project;
 final Future<void> Function()? onEdit;
 final Future<void> Function()? onDelete;
 
 const CircuitDetailScreen({
-super.key,
-required this.circuit,
-this.onEdit,
-this.onDelete,
+  super.key,
+  required this.project,
+  required this.circuit,
+  this.onEdit,
+  this.onDelete,
 });
 
 static const ElectricalCalculatorService _calc =
@@ -81,6 +88,17 @@ voltage: circuit.voltage,
 final ok =
 _calc.compliesVoltageDrop(
 drop,
+);
+final inspection =
+const RicInspector().inspect(
+  circuit: circuit,
+  voltageDrop: drop,
+);
+final report =
+const CalculationReport().build(
+  project: project,
+  circuit: circuit,
+  voltageDrop: drop,
 );
 
 return Scaffold(
@@ -205,7 +223,169 @@ value:
   ),
 
   const SizedBox(height: 24),
+  Card(
+    child: Padding(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
 
+          const Text(
+            "VERIFICACIÓN RIC",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          ListTile(
+            dense: true,
+            leading: Icon(
+              inspection.sectionOk
+                  ? Icons.check_circle
+                  : Icons.cancel,
+              color: inspection.sectionOk
+                  ? Colors.green
+                  : Colors.red,
+            ),
+            title: const Text(
+              "Sección mínima",
+            ),
+          ),
+
+          ListTile(
+            dense: true,
+            leading: Icon(
+              inspection.breakerOk
+                  ? Icons.check_circle
+                  : Icons.cancel,
+              color: inspection.breakerOk
+                  ? Colors.green
+                  : Colors.red,
+            ),
+            title: const Text(
+              "Protección",
+            ),
+          ),
+
+          ListTile(
+            dense: true,
+            leading: Icon(
+              inspection.differentialOk
+                  ? Icons.check_circle
+                  : Icons.cancel,
+              color: inspection.differentialOk
+                  ? Colors.green
+                  : Colors.red,
+            ),
+            title: const Text(
+              "Diferencial",
+            ),
+          ),
+
+          ListTile(
+            dense: true,
+            leading: Icon(
+              inspection.voltageDropOk
+                  ? Icons.check_circle
+                  : Icons.cancel,
+              color: inspection.voltageDropOk
+                  ? Colors.green
+                  : Colors.red,
+            ),
+            title: const Text(
+              "Caída de tensión",
+            ),
+          ),
+
+          ListTile(
+            dense: true,
+            leading: Icon(
+              inspection.earthOk
+                  ? Icons.check_circle
+                  : Icons.cancel,
+              color: inspection.earthOk
+                  ? Colors.green
+                  : Colors.red,
+            ),
+            title: const Text(
+              "Tierra",
+            ),
+          ),
+
+          ListTile(
+            dense: true,
+            leading: Icon(
+              inspection.conduitOk
+                  ? Icons.check_circle
+                  : Icons.cancel,
+              color: inspection.conduitOk
+                  ? Colors.green
+                  : Colors.red,
+            ),
+            title: const Text(
+              "Canalización",
+            ),
+          ),
+
+        ],
+      ),
+    ),
+  ),
+  FilledButton.icon(
+    onPressed: () async {
+      final bytes = await const PdfReportService().build(
+        project: project,
+        circuit: circuit,
+        voltageDrop: drop,
+      );
+      await Printing.layoutPdf(onLayout: (_) async => bytes);
+    },
+    icon: const Icon(Icons.picture_as_pdf),
+    label: const Text("Generar PDF"),
+  ),
+
+  const SizedBox(height: 12),
+
+  FilledButton.icon(
+    onPressed: () {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text(
+            "Memoria de Cálculo",
+          ),
+          content: SizedBox(
+            width: 600,
+            child: SingleChildScrollView(
+              child: SelectableText(
+                report,
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Cerrar"),
+            ),
+          ],
+        ),
+      );
+    },
+    icon: const Icon(Icons.description),
+    label: const Text(
+      "Ver Memoria de Cálculo",
+    ),
+  ),
+
+  const SizedBox(height: 12),
   if (onEdit != null)
     FilledButton.icon(
       onPressed: () async {

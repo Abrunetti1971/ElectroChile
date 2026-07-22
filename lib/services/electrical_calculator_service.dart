@@ -54,6 +54,46 @@ class ElectricalCalculatorService {
       double current, {
         String circuitType = '',
       }) {
+
+    final type = circuitType.trim().toLowerCase();
+
+    int minimumBreaker;
+
+    switch (type) {
+
+      case 'alumbrado':
+        minimumBreaker = 10;
+        break;
+
+      case 'enchufes':
+        minimumBreaker = 16;
+        break;
+
+      case 'fuerza':
+        minimumBreaker = 16;
+        break;
+
+      case 'motor':
+        minimumBreaker = 16;
+        break;
+
+      case 'aire acondicionado':
+        minimumBreaker = 16;
+        break;
+
+      case 'portón':
+      case 'porton':
+        minimumBreaker = 16;
+        break;
+
+      case 'bomba':
+        minimumBreaker = 16;
+        break;
+
+      default:
+        minimumBreaker = 16;
+    }
+
     const breakers = [
       6,
       10,
@@ -67,12 +107,20 @@ class ElectricalCalculatorService {
       80,
       100,
       125,
+      160,
+      200,
+      250,
     ];
 
+    final designCurrent = current * 1.25;
+
     for (final breaker in breakers) {
-      if (current <= breaker) {
+
+      if (breaker >= designCurrent &&
+          breaker >= minimumBreaker) {
         return breaker;
       }
+
     }
 
     return breakers.last;

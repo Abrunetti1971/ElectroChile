@@ -1,159 +1,104 @@
 import 'package:flutter/material.dart';
 
-import '../../models/load_summary.dart';
+import '../../models/project.dart';
+import '../../models/circuit.dart';
+import '../../services/load_summary_service.dart';
 
 class LoadSummaryScreen extends StatelessWidget {
-  final LoadSummary summary;
+  final Project project;
+  final List<Circuit> circuits;
 
   const LoadSummaryScreen({
     super.key,
-    required this.summary,
+    required this.project,
+    required this.circuits,
   });
-
-  Widget _row(
-      String title,
-      String value,
-      ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: 6,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Text(value),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
+    final summary = const LoadSummaryService().build(circuits);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Cuadro de Cargas",
-        ),
+        title: const Text('Resumen de Cargas'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(16),
         children: [
-
+          Card(
+            child: ListTile(
+              title: Text(project.name),
+              subtitle: Text(
+                  '${project.client}\n${project.address}\n${project.city}'),
+            ),
+          ),
+          const SizedBox(height: 16),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
                 children: [
-
-                  const Text(
-                    "Circuitos",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight:
-                      FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  ...summary.circuits.map(
-                        (circuit) {
-                      return Card(
-                        elevation: 0,
-                        color: Colors.blue.shade50,
-                        child: ListTile(
-                          title: Text(
-                            circuit.name,
-                          ),
-                          subtitle: Text(
-                            "${circuit.type}\n"
-                                "${circuit.power.toStringAsFixed(0)} W",
-                          ),
-                          trailing: Column(
-                            mainAxisAlignment:
-                            MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "${circuit.current.toStringAsFixed(2)} A",
-                              ),
-                              Text(
-                                "${circuit.conductorSection} mm²",
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                  _row('Potencia instalada',
+                      '${summary.installedPower.toStringAsFixed(1)} W'),
+                  _row('Corriente instalada',
+                      '${summary.installedCurrent.toStringAsFixed(2)} A'),
+                  _row('Potencia demandada',
+                      '${summary.demandPower.toStringAsFixed(1)} W'),
+                  _row('Corriente demandada',
+                      '${summary.demandCurrent.toStringAsFixed(2)} A'),
+                  _row('Interruptor General', summary.mainBreaker),
+                  _row('Diferencial General', summary.mainDifferential),
                 ],
               ),
             ),
           ),
-
-          const SizedBox(height: 18),
-
+          const SizedBox(height: 16),
+          const Text('Circuitos',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          DataTable(
+            columns: const [
+              DataColumn(label: Text('N°')),
+              DataColumn(label: Text('Circuito')),
+              DataColumn(label: Text('W')),
+              DataColumn(label: Text('A')),
+              DataColumn(label: Text('Prot.')),
+            ],
+            rows: summary.circuits
+                .map(
+                  (c) => DataRow(cells: [
+                    DataCell(Text('${c.number}')),
+                    DataCell(Text(c.name)),
+                    DataCell(Text(c.power.toStringAsFixed(0))),
+                    DataCell(Text(c.current.toStringAsFixed(2))),
+                    DataCell(Text(c.protection)),
+                  ]),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 16),
           Card(
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                children: [
-
-                  _row(
-                    "Circuitos",
-                    summary.circuitsCount.toString(),
-                  ),
-
-                  _row(
-                    "Potencia instalada",
-                    "${summary.installedPower.toStringAsFixed(0)} W",
-                  ),
-
-                  _row(
-                    "Potencia demandada",
-                    "${summary.demandPower.toStringAsFixed(0)} W",
-                  ),
-
-                  _row(
-                    "Corriente total",
-                    "${summary.totalCurrent.toStringAsFixed(2)} A",
-                  ),
-
-                  _row(
-                    "Alimentador",
-                    "${summary.feederSection.toStringAsFixed(1)} mm²",
-                  ),
-
-                  _row(
-                    "Disyuntor General",
-                    "${summary.mainBreaker} A",
-                  ),
-
-                  _row(
-                    "Diferencial",
-                    summary.differential,
-                  ),
-
-                  _row(
-                    "Empalme",
-                    summary.recommendedService,
-                  ),
-                ],
-              ),
+            color: summary.ricCompliant
+                ? Colors.green.shade50
+                : Colors.orange.shade50,
+            child: ListTile(
+              leading: Icon(
+                  summary.ricCompliant ? Icons.check_circle : Icons.warning),
+              title: Text(summary.ricCompliant
+                  ? 'Proyecto conforme'
+                  : 'Proyecto con observaciones'),
             ),
           ),
-
-          const SizedBox(height: 30),
         ],
       ),
     );
   }
+
+  Widget _row(String t, String v) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [Text(t), Text(v)],
+        ),
+      );
 }

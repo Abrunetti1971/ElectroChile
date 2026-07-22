@@ -57,6 +57,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
     }
 
     final result = ConductorCalculator.calculate(
+      circuitType: 'Otro',
       voltage: _threePhase ? 380 : 220,
       power: power,
       length: length,

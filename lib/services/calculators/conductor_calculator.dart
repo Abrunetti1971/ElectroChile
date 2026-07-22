@@ -1,3 +1,5 @@
+import '../rules/ampacity_tables.dart';
+import '../rules/ric_rules.dart';
 import 'voltage_drop_calculator.dart';
 
 class ConductorSelectionResult {
@@ -19,19 +21,22 @@ class ConductorSelectionResult {
 class ConductorCalculator {
   ConductorCalculator._();
 
-  static const List<double> standardSections = [
-    1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240,
-  ];
-
   static ConductorSelectionResult calculate({
+    required String circuitType,
     required double voltage,
     required double power,
     required double length,
     required bool copper,
     required bool threePhase,
-    double maxVoltageDropPercent = 3.0,
+    double maxVoltageDropPercent = RicRules.maximumVoltageDrop,
   }) {
-    for (final section in standardSections) {
+    final minimumSection = RicRules.minimumSection(circuitType);
+
+    final availableSections = RicRules.standardSections
+        .where((section) => section >= minimumSection)
+        .toList();
+
+    for (final section in availableSections) {
       final result = VoltageDropCalculator.calculate(
         voltage: voltage,
         power: power,
@@ -40,6 +45,14 @@ class ConductorCalculator {
         copper: copper,
         threePhase: threePhase,
       );
+
+      if (!AmpacityTables.complies(
+        current: result.current,
+        section: section,
+        copperConductor: copper,
+      )) {
+        continue;
+      }
 
       if (result.voltageDropPercent <= maxVoltageDropPercent) {
         return ConductorSelectionResult(
@@ -52,18 +65,20 @@ class ConductorCalculator {
       }
     }
 
+    final fallbackSection = availableSections.last;
+
     final result = VoltageDropCalculator.calculate(
       voltage: voltage,
       power: power,
       length: length,
-      section: standardSections.last,
+      section: fallbackSection,
       copper: copper,
       threePhase: threePhase,
     );
 
     return ConductorSelectionResult(
       current: result.current,
-      section: standardSections.last,
+      section: fallbackSection,
       voltageDrop: result.voltageDrop,
       voltageDropPercent: result.voltageDropPercent,
       complies: false,

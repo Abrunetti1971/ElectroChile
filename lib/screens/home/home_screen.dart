@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../calculators/calculators_screen.dart';
 import '../projects/projects_screen.dart';
+import '../sec/project_validation_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -40,9 +41,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 20),
-
           _MenuCard(
             icon: Icons.folder_copy,
             title: 'Mis Proyectos',
@@ -56,7 +55,6 @@ class HomeScreen extends StatelessWidget {
               );
             },
           ),
-
           _MenuCard(
             icon: Icons.calculate,
             title: 'Calculadoras',
@@ -70,22 +68,38 @@ class HomeScreen extends StatelessWidget {
               );
             },
           ),
-
           _MenuCard(
-            icon: Icons.menu_book,
-            title: 'Biblioteca SEC',
-            subtitle: 'Próximamente',
+            icon: Icons.verified_user,
+            title: 'Centro de Validación SEC',
+            subtitle: 'Validar proyecto antes de declarar',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ProjectValidationScreen(),
+                ),
+              );
+            },
+          ),
+          const _MenuCard(
+            icon: Icons.assignment,
+            title: 'Declaraciones SEC',
+            subtitle: 'TE1 · TE2 · TE4',
             enabled: false,
           ),
-
-          _MenuCard(
+          const _MenuCard(
+            icon: Icons.library_books,
+            title: 'Biblioteca Técnica RIC',
+            subtitle: 'Consulta normativa y pliegos',
+            enabled: false,
+          ),
+          const _MenuCard(
             icon: Icons.picture_as_pdf,
             title: 'Reportes PDF',
             subtitle: 'Próximamente',
             enabled: false,
           ),
-
-          _MenuCard(
+          const _MenuCard(
             icon: Icons.settings,
             title: 'Configuración',
             subtitle: 'Próximamente',
@@ -118,9 +132,7 @@ class _MenuCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       elevation: 2,
       child: ListTile(
-        leading: CircleAvatar(
-          child: Icon(icon),
-        ),
+        leading: CircleAvatar(child: Icon(icon)),
         title: Text(
           title,
           style: TextStyle(
